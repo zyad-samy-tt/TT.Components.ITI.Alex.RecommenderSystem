@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User-Based Recommendations</title>
+    <!-- Include Bootstrap CSS and Select2 CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet" />
+    <!-- Include custom CSS -->
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    
+</head>
+<body>
+    <div class="loader-container" id="loaderContainer">
+        <div class="loader"></div>
+    </div>
+
+    <div class="container">
+        <h1 class="text-center">User-Based Recommendations</h1>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="recommendations"></div>
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include jQuery, Bootstrap JS, and Select2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        let globalResponse = null; // To store the response globally
+
+        function displayRecommendations(data, page) {
+            var recommendationsDiv = $('#recommendations');
+            recommendationsDiv.empty();
+            recommendationsDiv.append('<h2>Recommendations for User ' + data.user_id + '</h2>');
+            var grid = $('<div class="recommendation-grid"></div>');
+            var start = (page - 1) * 20;
+            var end = start + 20;
+            var recommendationsPage = data.recommendations.slice(start, end);
+            recommendationsPage.forEach(function(rec) {
+                var recommendationItem = $('<div class="recommendation-item"></div>');
+                var loader = $('<div class="loader"></div>');
+                recommendationItem.append(loader);
+                if (data.images[rec]) {
+                    var img = $('<img src="' + data.images[rec] + '" alt="' + rec + '">');
+                    img.on('load', function() {
+                        loader.remove();
+                        $(this).show();
+                    });
+                    recommendationItem.append(img);
+                } else {
+                    loader.remove();
+                    recommendationItem.append('<div class="no-image">No image available</div>');
+                }
+                grid.append(recommendationItem);
+            });
+            recommendationsDiv.append(grid);
+            $('#loaderContainer').hide(); // Hide the loader once recommendations are displayed
+        }
+
+        function setupPagination(totalItems) {
+            var paginationDiv = $('#pagination');
+            paginationDiv.empty();
+            var totalPages = Math.ceil(totalItems / 20);
+            for (var i = 1; i <= totalPages; i++) {
+                var button = $('<button>' + i + '</button>');
+                button.on('click', function() {
+                    var page = $(this).text();
+                    displayRecommendations(globalResponse, page);
+                    $('.pagination button').removeClass('disabled');
+                    $(this).addClass('disabled');
+                });
+                paginationDiv.append(button);
+            }
+            paginationDiv.find('button').first().addClass('disabled'); // Disable the first button initially
+        }
+
+        $(document).ready(function() {
+            var userId = new URLSearchParams(window.location.search).get('user_id');
+            $('#loaderContainer').show(); // Show the loader initially
+            $.ajax({
+                url: '/get_user_recommendations',
+                type: 'GET',
+                data: { user_id: userId },
+                success: function(response) {
+                    globalResponse = response; // Store the response globally
+                    displayRecommendations(response, 1);
+                    setupPagination(response.recommendations.length);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
