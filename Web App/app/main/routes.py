@@ -12,8 +12,12 @@ model, user_encoder, item_encoder, region_encoder, scaler, df = load_user_based_
 
 @main.route('/')
 def index():
+    return render_template('index.html')
+
+@main.route('/freq-bought-recommender')
+def freq_bought_recommender():
     product_titles = data[data['product_id'].isin(product_ids_sample)]['title'].unique().tolist()
-    return render_template('index.html', product_titles=product_titles)
+    return render_template('freq-bought-recommender.html', product_titles=product_titles)
 
 @main.route('/recommend', methods=['POST'])
 def recommend():
@@ -24,16 +28,16 @@ def recommend():
     selected_product_image = get_images([product_id]).get(product_id)
     return jsonify({'product_id': product_id, 'product_title': product_title, 'recommendations': recommendations, 'images': images, 'selected_product_image': selected_product_image})
 
-@main.route('/image-recommender')
+@main.route('/similarity-recommender')
 def image_recommender():
     product_titles = data[data['product_id'].isin(product_ids_sample)]['title'].unique().tolist()
-    return render_template('image_recommender.html', product_titles=product_titles)
+    return render_template('similarity_recommender.html', product_titles=product_titles)
 
 @main.route('/image-recommend', methods=['POST'])
 def image_recommend():
     product_title = request.form['product_title']
     product_id = data[data['title'] == product_title]['product_id'].values[0]
-    results = get_similar_products(product_id, 10)[1:]
+    results = get_similar_products(product_id, 100)[1:]
     recommendations = [result.id for result in results]
     images = get_images(recommendations)
     selected_product_image = get_images([product_id]).get(product_id)
@@ -41,7 +45,7 @@ def image_recommend():
 
 @main.route('/user_recommender')
 def user_recommender():
-    user_ids = df['User_ID'].sample(10).values.tolist()
+    user_ids = df['User_ID'].sample(1000).values.tolist()
     return render_template('user-recommender.html', user_ids=user_ids)
 
 @main.route('/user_recommend', methods=['POST'])
