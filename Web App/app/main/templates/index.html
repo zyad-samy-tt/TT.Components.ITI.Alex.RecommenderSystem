@@ -9,19 +9,71 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Include custom CSS -->
     <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <!-- Custom icon CSS -->
+    <style>
+        .logo-container {
+            background-color: #ffffff; /* White background for the logo section */
+            padding: 20px 0; /* Add top and bottom padding */
+            width: 100%; /* Full width */
+            text-align: center; /* Center align content */
+        }
+        .logo-icon {
+            width: 410px; /* Adjust size as needed */
+            height: auto; /* Maintain aspect ratio */
+            margin-bottom: 10px;
+            border: none; /* Remove border */
+        }
+        .welcome-text {
+            font-size: 30px; /* Adjust font size as needed */
+            margin-top: 20px; /* Add spacing above the text */
+        }
+        .welcome-subtext {
+            font-size: 18px; /* Smaller font size */
+            margin-top: 10px; /* Add spacing */
+        }
+        .btn-custom {
+            background-color: #c4e9d8; /* Button background color */
+            color: #000; /* Text color (black) */
+            border-color: #c4e9d8; /* Border color */
+            margin-top: 20px; /* Add margin to separate from logo */
+        }
+        .btn-custom:hover {
+            background-color: #4dbb91; /* Darker shade on hover */
+            border-color: #4dbb91;
+            color: #000; /* Text color on hover (black) */
+        }
+        body {
+            background-color: #f6f6f6; /* Background color for the rest of the page */
+        }
+        .icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container text-center mt-5">
-        <h1>Welcome to the Recommendation System</h1>
-        <div class="row mt-5">
-            <div class="col-md-4">
-                <a href="/freq-bought-recommender" class="btn btn-primary btn-lg btn-block">Frequently Bought Recommendations</a>
-            </div>
-            <div class="col-md-4">
-                <a href="/similarity-recommender" class="btn btn-primary btn-lg btn-block">Similarity Recommendations</a>
-            </div>
-            <div class="col-md-4">
-                <a href="/user_recommender" class="btn btn-primary btn-lg btn-block">User-based Recommendations</a>
+    <div class="container-fluid p-0">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logoo.PNG') }}" alt="TwentyToo Logo" class="logo-icon">
+            <hr style="border-top: 1px solid #fff; margin-top: 10px; margin-bottom: 10px;"> <!-- Horizontal line -->
+        </div>
+        <div class="container text-center mt-5">
+            <h1 class="welcome-text">Welcome To TwentyToo Fashion Recommendation Engine</h1>
+            <p class="welcome-subtext">Discover your perfect style with our curated selection of fashion-forward picks. Whether you're looking for complete looks with our 'Top Picks Together' suggestions, exploring 'Similar Styles' for trending matches, or seeking 'Personalized Picks' tailored just for you, we're here to elevate your wardrobe effortlessly. Start exploring and let your style shine!</p>
+            <div class="row mt-5">
+                <div class="col-md-4">
+                    <img src="{{ url_for('static', filename='freq.png') }}" alt="Frequently Bought Icon" class="icon">
+                    <a href="/freq-bought-recommender" class="btn btn-custom btn-lg btn-block">Top Picks Together</a>
+                </div>
+                <div class="col-md-4">
+                    <img src="{{ url_for('static', filename='similar.png') }}" alt="Similarity Icon" class="icon">
+                    <a href="/similarity-recommender" class="btn btn-custom btn-lg btn-block">Similar Styles</a>
+                </div>
+                <div class="col-md-4">
+                    <img src="{{ url_for('static', filename='person.png') }}" alt="Personalization Icon" class="icon">
+                    <a href="/user_recommender" class="btn btn-custom btn-lg btn-block">Personalized Picks</a>
+                </div>
             </div>
         </div>
     </div>

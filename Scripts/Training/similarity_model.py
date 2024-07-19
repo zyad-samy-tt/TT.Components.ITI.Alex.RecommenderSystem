@@ -24,20 +24,18 @@ BUCKET_NAME = os.getenv('BUCKET_NAME')
 FOLDER_PATH = os.getenv('FOLDER_PATH')
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 PINECONE_INDEX_NAME = os.getenv('PINECONE_INDEX_NAME')
-    
 
 # Set up argument parser
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('--data_path', type=str, required=True, help='Path to the input data CSV file.')
-
 
 # Load pre-trained Roberta for text
 tokenizer = RobertaTokenizer.from_pretrained('roberta-large')
 text_model = RobertaModel.from_pretrained('roberta-large', add_pooling_layer=False)
 
 # Load pre-trained EfficientNet-B3 for images
-image_model = timm.create_model('efficientnet_b5', pretrained=True, num_classes=0)  # num_classes=0 removes the classification layer
-
+image_model = timm.create_model('efficientnet_b5', pretrained=True,
+                                num_classes=0)  # num_classes=0 removes the classification layer
 
 # Set models to evaluation mode
 text_model.eval()
@@ -58,6 +56,7 @@ preprocess = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # Normalize with ImageNet mean and std
 ])
 
+
 # Concatenation Fusion Model with Dimensionality Reduction
 class ConcatFusion(nn.Module):
     def __init__(self, text_dim, image_dim, output_dim):
@@ -70,6 +69,7 @@ class ConcatFusion(nn.Module):
         normalized_features = F.normalize(combined_features, p=2, dim=1)  # L2 normalization
         return normalized_features
 
+
 # Define feature dimensions
 text_dim = 1024  # Dimension of the DistilBert embeddings
 image_dim = image_model.module.num_features  # Dimension of the EfficientNet-B0 embeddings
@@ -79,7 +79,6 @@ hidden_dim = 1024  # Hidden dimension for attention
 concat_fusion_model = ConcatFusion(text_dim, image_dim, hidden_dim)
 concat_fusion_model = nn.DataParallel(concat_fusion_model).to(device)
 
-
 session = boto3.Session(
     aws_access_key_id=AWS_ACCESS_KEY_ID,
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
@@ -88,18 +87,18 @@ session = boto3.Session(
 
 s3 = session.client('s3')
 
-pc = Pinecone(api_key=PINECONE_API_KEY) # Replace with your api key
+pc = Pinecone(api_key=PINECONE_API_KEY)  # Replace with your api key
 
 # Create a Pinecone index
 try:
-#     print("hello")
+    #     print("hello")
     pc.create_index(PINECONE_INDEX_NAME, dimension=hidden_dim, metric="cosine",
-    spec=ServerlessSpec(
-        cloud="aws",
-        region="us-east-1"
-    ))
+                    spec=ServerlessSpec(
+                        cloud="aws",
+                        region="us-east-1"
+                    ))
 except:
-  pass
+    pass
 
 index = pc.Index(PINECONE_INDEX_NAME)
 
@@ -111,6 +110,7 @@ def get_text_features(text):
         outputs = text_model(**inputs)
     text_features = outputs.last_hidden_state.mean(dim=1)  # Average pooling
     return text_features
+
 
 # Function to extract image features from S3
 def get_image_features(product_id):
@@ -126,7 +126,7 @@ def get_image_features(product_id):
     except Exception as e:
         print(f"Error loading image {product_id}: {e}")
         return None
-    
+
 
 # Function to process a single row
 def process_row(row):
@@ -143,7 +143,8 @@ def process_row(row):
     description_edited = description if description != "" and isinstance(description, str) else ""
     title_edited = f'Title: {title};' if title != "" and isinstance(title, str) else ""
     department_edited = f'Department: {department};' if department != "" and isinstance(department, str) else ""
-    target_audience_edited = f'Target Audience: {target_audience};' if target_audience != "" and isinstance(target_audience, str) else ""
+    target_audience_edited = f'Target Audience: {target_audience};' if target_audience != "" and isinstance(
+        target_audience, str) else ""
 
     combined_description = f"{title_edited} {department_edited} {target_audience_edited} {description_edited}"
 
@@ -151,7 +152,7 @@ def process_row(row):
 
     text_features = get_text_features(combined_description).to(device).view(1, -1)  # Ensure correct shape
     image_features = get_image_features(product_id)
-    
+
     if image_features is not None:
         image_features = image_features.to(device).view(1, -1)  # Ensure correct shape
         fused_features = concat_fusion_model(text_features, image_features)
@@ -189,11 +190,11 @@ else:
 # Function to process a chunk of rows
 def process_chunk(device_id, chunk):
     torch.cuda.set_device(device_id)
-    
+
     batch_size = 500
     batch = []
     batch_ids = []
-    
+
     # print(type(chunk),chunk[0][1][0],processed_ids,device_id)
     for row in tqdm(chunk[device_id][1], total=len(chunk[device_id][1]), desc=f"Processing rows on GPU {device_id}"):
         if str(row['product_id']) in processed_ids:
@@ -219,6 +220,7 @@ def process_chunk(device_id, chunk):
             f.write("\n".join(batch_ids) + "\n")
         index.upsert(vectors=batch)
 
+
 if __name__ == '__main__':
     # Split the rows into chunks
     num_chunks = 2  # Number of GPUs
@@ -232,8 +234,8 @@ if __name__ == '__main__':
 
     # Use torch.multiprocessing.spawn to run each chunk on a separate GPU
     torch.multiprocessing.spawn(process_chunk,
-                                args=(spawn_args, ),
+                                args=(spawn_args,),
                                 nprocs=num_chunks,
                                 join=True)
-    
+
     print("Processing complete and vectors uploaded to Pinecone!")

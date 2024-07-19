@@ -4,6 +4,7 @@ import os
 # Load environment variables from .env file
 load_dotenv()
 
+
 class Config:
     # Example configuration variables
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
@@ -12,6 +13,6 @@ class Config:
     BUCKET_NAME = os.getenv('BUCKET_NAME')
     FOLDER_PATH = os.getenv('FOLDER_PATH')
     PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
-    PINECONE_INDEX_NAME = os.getenv('PINECONE_INDEX_NAME')
-    
-
+    PINECONE_INDEX_NAME1 = os.getenv('PINECONE_INDEX_NAME1')
+    PINECONE_INDEX_NAME2 = os.getenv('PINECONE_INDEX_NAME2')
+    # PINECONE_INDEX_NAME3 = os.getenv('PINECONE_INDEX_NAME3')

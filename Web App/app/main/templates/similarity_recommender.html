@@ -3,33 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Recommendations</title>
+    <title>Similarity Recommendations</title>
     <!-- Include Bootstrap CSS and Select2 CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet">
     <!-- Include custom CSS -->
     <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <!-- Custom icon CSS -->
+    <style>
+        .logo-container {
+            background-color: #ffffff;
+            padding: 10px 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo-icon {
+            width: 200px;
+            height: auto;
+            border: none;
+        }
+        .home-icon {
+            width: 40px;
+            height: auto;
+            margin-right: 25px;
+        }
+        .home-icon img {
+            width: 100%;
+            height: auto;
+            border: none;
+        }
+        body {
+            background-color: #f6f6f6;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .header-box {
+            background-color: #c4e9d8;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            margin-top: 50px; /* Adjusted margin top */
+            width: 100%;
+            margin-left: 0;
+            margin-right: 0;
+            box-sizing: border-box;
+        }
+        .recommendation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .recommendation-item {
+            position: relative;
+            text-align: center;
+        }
+        .recommendation-item img {
+            max-width: 100%;
+            height: auto;
+            display: none;
+        }
+        .recommendation-item .score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        #selectedProductImage h2 {
+            font-size: 1em; /* Adjusted font size */
+            margin-top: 24px;
+            margin-bottom: 10px;
+        }
+        .recommendations-title {
+            font-size: 1.2em; /* Adjusted font size */
+            margin-top: 24px;
+            margin-bottom: 10px;
+        }
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            margin: 0 5px;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1afe85;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 2s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
+        /* Custom button style */
+        .btn-primary {
+            background-color: #c4e9d8; /* Set the background color for primary buttons */
+            border-color: #c4e9d8; /* Set border color to match */
+            color: black; /* Set text color to black */
+        }
+
+        .btn-primary:hover,
+        .btn-primary:active,
+        .btn-primary:focus {
+            background-color: #4dbb91; /* Background color when hovering or active */
+            border-color: #4dbb91; /* Border color when hovering or active */
+            color: black; /* Adjust text color if needed */
+        }
+
+        /* Recommendation grid styles */
+        .recommendation-grid {
+            display: grid; /* Use CSS Grid for layout */
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid with minimum 200px width columns */
+            gap: 20px; /* Gap between grid items */
+        }
+
+        .recommendation-item {
+        position: relative;
+        text-align: center;
+    }
+
+    .recommendation-item .score {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 5px;
+        border-radius: 5px;
+        font-weight: bold;
+        display: none; /* Hide score initially */
+    }
+
+        .loader {
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Center loader */
+        }
+
+        .recommendation-item img {
+            max-width: 100%; /* Ensure images fit within their containers */
+            height: auto; /* Maintain aspect ratio */
+            display: none; /* Initially hide images */
+        }
+
+        /* Adjust text size for recommendations */
+        .recommendations-title {
+            font-size: 1.2em; /* Adjust the font size as needed */
+            margin-bottom: 10px; /* Add some bottom margin */
+            margin-top: 24px; /* Add margin to push it down */
+        }
+
+        #selectedProductImage h2 {
+            font-size: 1em; /* Adjust the font size smaller */
+            margin-bottom: 10px; /* Maintain bottom margin */
+            margin-top: 24px; /* Maintain top margin */
+        }
+
+        /* Customizing Select2 dropdown */
+        .select2-container--default .select2-selection--single {
+            background-color: #ffffff; /* Background color for the dropdown when closed */
+            color: black; /* Text color */
+            height: 38px; /* Adjust height as needed */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px; /* Center text vertically */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            top: 7px; /* Adjust arrow position */
+        }
+
+        .select2-container--default .select2-results__option {
+            background-color: #ffffff; /* Default background color */
+            color: black; /* Text color */
+        }
+
+        .select2-container--default .select2-results__option:hover {
+            background-color: #c4e9d8; /* Hover color */
+            color: black; /* Selected item text color */
+        }
+
+        .select2-container--default .select2-results__option.selected {
+            background-color: #c4e9d8; /* Selected item background color */
+            color: black; /* Selected item text color */
+        }
+        .pagination button {
+            background-color: #ffffff; /* Default background color */
+            color: #333; /* Default text color */
+            border: 1px solid #ccc; /* Default border */
+            margin: 0 5px; /* Add some margin between buttons */
+        }
+
+        .pagination button:not(.disabled):hover {
+            background-color: #4dbb91; /* Hover background color */
+            color: black; /* Hover text color */
+            border-color: #4dbb91; /* Hover border color */
+        }
+        #initialImage {
+            width: 55%; /* Set a specific width */
+            height: auto; /* Maintain aspect ratio */
+            float: right; /* Float the image to the right */
+            margin-left: 10px; /* Reduce the margin to the left of the image */
+            margin-right: 80px;
+        }
+    </style>
 </head>
 <body>
+    <div class="container-fluid p-0">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logoo.PNG') }}" alt="TwentyToo Logo" class="logo-icon">
+            <a href="/" class="home-icon">
+                <img src="{{ url_for('static', filename='home.png') }}" alt="Home">
+            </a>
+        </div>        
+    </div>
     <div class="container">
-        <h1 class="text-center">Product Recommendations - Image</h1>
+        <div class="header-box">
+            <h1>Similar Styles</h1>
+        </div>
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-4 mt-4">
                 <form id="recommendationForm" method="post" class="bg-white p-4 shadow rounded">
                     <div class="form-group">
                         <label for="product_title">Select Product Title:</label>
                         <select id="product_title" name="product_title" class="form-control" required>
-                        {% for product_title in product_titles %}
-                            <option value="{{ product_title }}">{{ product_title }}</option>
-                        {% endfor %}
+                            {% for product_title in product_titles %}
+                                <option value="{{ product_title }}">{{ product_title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="model">Select Model:</label>
+                        <select id="model" name="model" class="form-control" required>
+                            <option value="roberta">ROBERTA</option>
+                            <option value="fclip">F-CLIP</option>
+<!--                            <option value="model3">Model 3</option>-->
+                            <!-- Add more models as needed -->
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block">Get Recommendations</button>
                 </form>
+
                 <div id="selectedProductImage" class="mt-4"></div>
             </div>
             <div class="col-md-8">
+                <img id="initialImage" src="./static/similar.png" alt="Initial Image" class="img-fluid">
                 <div id="recommendations"></div>
                 <div class="pagination" id="pagination"></div>
             </div>
@@ -41,8 +271,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        let globalResponse = null; // To store the response globally
-
         $(document).ready(function() {
             $('#product_title').select2({
                 placeholder: "Select a product",
@@ -56,7 +284,8 @@
                     type: 'POST',
                     data: $(this).serialize(),
                     success: function(response) {
-                        globalResponse = response; // Store the response globally
+                        // Hide initial image
+                        $('#initialImage').hide();
                         displayRecommendations(response, 1);
                         setupPagination(response.recommendations.length);
                     }
@@ -85,29 +314,39 @@
 
             var recommendationsDiv = $('#recommendations');
             recommendationsDiv.empty();
-            recommendationsDiv.append('<h2>Recommendations for ' + data.product_title + '</h2>');
+            recommendationsDiv.append('<h2 class="recommendations-title"> Recommendations for ' + data.product_title + '</h2>'); // Apply class here
             var grid = $('<div class="recommendation-grid"></div>');
             var start = (page - 1) * 20;
             var end = start + 20;
             var recommendationsPage = data.recommendations.slice(start, end);
-            recommendationsPage.forEach(function(rec) {
-                var recommendationItem = $('<div class="recommendation-item"></div>');
-                // recommendationItem.append('<p><strong>' + rec + '</strong></p>');
-                var loader = $('<div class="loader"></div>');
-                recommendationItem.append(loader);
-                if (data.images[rec]) {
-                    var img = $('<img src="' + data.images[rec] + '" alt="' + rec + '">');
-                    img.on('load', function() {
-                        loader.remove();
-                        $(this).show();
-                    });
-                    recommendationItem.append(img);
-                } else {
+            recommendationsPage.forEach(function(rec, index) {
+            var recommendationItem = $('<div class="recommendation-item"></div>');
+            var loader = $('<div class="loader"></div>');
+            recommendationItem.append(loader);
+            if (data.images[rec]) {
+                var img = $('<img src="' + data.images[rec] + '" alt="' + rec + '">');
+                img.on('load', function() {
                     loader.remove();
-                    recommendationItem.append('<p>No image available</p>');
-                }
-                grid.append(recommendationItem);
-            });
+                    $(this).show();
+                });
+
+                // Add hover functionality to show score
+                recommendationItem.on('mouseenter', function() {
+                    $(this).find('.score').fadeIn();
+                }).on('mouseleave', function() {
+                    $(this).find('.score').fadeOut();
+                });
+
+                recommendationItem.append(img);
+                var score = $('<div class="score">' + data.scores[index] + '</div>');
+                recommendationItem.append(score.hide()); // Hide score initially
+            } else {
+                loader.remove();
+                recommendationItem.append('<p>No image available</p>');
+            }
+            grid.append(recommendationItem);
+        });
+
             recommendationsDiv.append(grid);
         }
 

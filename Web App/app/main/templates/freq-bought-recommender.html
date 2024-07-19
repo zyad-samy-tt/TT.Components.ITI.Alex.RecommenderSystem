@@ -3,26 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Recommendations</title>
+    <title>Frequently Bought Recommendations</title>
     <!-- Include Bootstrap CSS and Select2 CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet" />
+    <!-- Include Font Awesome CSS for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Include custom CSS -->
     <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
-    
+    <!-- Custom icon CSS -->
+    <style>
+        .logo-container {
+            background-color: #ffffff; /* White background for the logo section */
+            padding: 10px 0; /* Reduced top and bottom padding */
+            width: 100%; /* Full width */
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Space between logo and home icon */
+        }
+        .logo-icon {
+            width: 200px; /* Reduced size */
+            height: auto; /* Maintain aspect ratio */
+            border: none; /* Remove border */
+        }
+        .home-icon {
+            width: 40px; /* Increase the width */
+            height: auto; /* Maintain aspect ratio */
+            margin-right: 25px; /* Margin on the right */
+        }
+        .home-icon img {
+            width: 100%; /* Make sure the image takes up the full size of the container */
+            height: auto; /* Maintain aspect ratio */
+            border: none; /* Remove any additional border on the image itself */
+        }
+        body {
+            background-color: #f6f6f6; /* Background color for the rest of the page */
+        }
+        .header-box {
+            background-color: #c4e9d8;
+            padding: 10px; /* Reduced padding inside the box */
+            text-align: center;
+            border-radius: 8px;
+            margin-top: 20px;
+            width: 100%; /* Ensure full width */
+            margin-left: 0; /* Remove left margin */
+            margin-right: 0; /* Remove right margin */
+            box-sizing: border-box; /* Include padding and border in the element's total width */
+        }
+       /* Custom button style */
+        .btn-primary {
+            background-color: #c4e9d8; /* Set the background color for primary buttons */
+            border-color: #c4e9d8; /* Set border color to match */
+            color: black; /* Set text color to black */
+        }
+
+        .btn-primary:hover,
+        .btn-primary:active,
+        .btn-primary:focus {
+            background-color: #4dbb91; /* Background color when hovering or active */
+            border-color: #4dbb91; /* Border color when hovering or active */
+            color: black; /* Adjust text color if needed */
+        }
+
+        /* Recommendation grid styles */
+        .recommendation-grid {
+            display: grid; /* Use CSS Grid for layout */
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid with minimum 200px width columns */
+            gap: 20px; /* Gap between grid items */
+        }
+
+        .recommendation-item {
+            position: relative; /* Ensure relative positioning for loader */
+            text-align: center; /* Center-align grid items */
+        }
+
+        .loader {
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Center loader */
+        }
+
+        .recommendation-item img {
+            max-width: 100%; /* Ensure images fit within their containers */
+            height: auto; /* Maintain aspect ratio */
+            display: none; /* Initially hide images */
+        }
+
+        /* Adjust text size for recommendations */
+        .recommendations-title {
+            font-size: 1.2em; /* Adjust the font size as needed */
+            margin-bottom: 10px; /* Add some bottom margin */
+            margin-top: 24px; /* Add margin to push it down */
+        }
+
+        #selectedProductImage h2 {
+            font-size: 1em; /* Adjust the font size smaller */
+            margin-bottom: 10px; /* Maintain bottom margin */
+            margin-top: 24px; /* Maintain top margin */
+        }
+        /* Customizing Select2 dropdown */
+        .select2-container--default .select2-selection--single {
+            background-color: #ffffff; /* Background color for the dropdown when closed */
+            color: black; /* Text color */
+            height: 38px; /* Adjust height as needed */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px; /* Center text vertically */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            top: 7px; /* Adjust arrow position */
+        }
+
+        .select2-container--default .select2-results__option {
+            background-color: #ffffff; /* Default background color */
+            color: black; /* Text color */
+        }
+
+        .select2-container--default .select2-results__option:hover {
+            background-color: #c4e9d8; /* Hover color */
+            color: black; /* Selected item text color */
+        }
+
+        .select2-container--default .select2-results__option.selected {
+            background-color: #c4e9d8; /* Selected item background color */
+            color: black; /* Selected item text color */
+        }
+        #initialImage {
+            width: 50%; /* Set a specific width */
+            height: auto; /* Maintain aspect ratio */
+            float: right; /* Float the image to the right */
+            margin-left: 10px; /* Reduce the margin to the left of the image */
+            margin-right: 80px;
+        }
+    </style>
 </head>
 <body>
+    <div class="container-fluid p-0">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logoo.PNG') }}" alt="TwentyToo Logo" class="logo-icon">
+            <a href="/" class="home-icon">
+                <img src="{{ url_for('static', filename='home.png') }}" alt="Home">
+            </a>
+        </div>        
+    </div>
     <div class="container">
-        <h1 class="text-center">Product Recommendations</h1>
+        <div class="header-box">
+            <h1>Top Picks Together</h1>
+        </div>
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-4 mt-4">
                 <form id="recommendationForm" method="post" class="bg-white p-4 shadow rounded">
                     <div class="form-group">
                         <label for="product_title">Select Product Title:</label>
                         <select id="product_title" name="product_title" class="form-control" required>
-                        {% for product_title in product_titles %}
-                            <option value="{{ product_title }}">{{ product_title }}</option>
-                        {% endfor %}
+                            {% for product_title in product_titles %}
+                                <option value="{{ product_title }}">{{ product_title }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block">Get Recommendations</button>
@@ -30,103 +170,147 @@
                 <div id="selectedProductImage" class="mt-4"></div>
             </div>
             <div class="col-md-8">
+                <img id="initialImage" src="./static/freq.png" alt="Initial Image" class="img-fluid">
                 <div id="recommendations"></div>
                 <div class="pagination" id="pagination"></div>
             </div>
         </div>
     </div>
+    
+    
 
     <!-- Include jQuery, Bootstrap JS, and Select2 JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        let globalResponse = null; // To store the response globally
-
         $(document).ready(function() {
-            $('#product_title').select2({
-                placeholder: "Select a product",
-                allowClear: true
-            });
-
-            $('#recommendationForm').on('submit', function(e) {
-                e.preventDefault();
-                $.ajax({
-                    url: '/recommend',
-                    type: 'POST',
-                    data: $(this).serialize(),
-                    success: function(response) {
-                        globalResponse = response; // Store the response globally
-                        displayRecommendations(response, 1);
-                        setupPagination(response.recommendations.length);
-                    }
-                });
-            });
+        $('#product_title').select2({
+            placeholder: "Select a product",
+            allowClear: true
         });
 
-        function displayRecommendations(data, page) {
-            var recommendationsDiv = $('#recommendations');
-            recommendationsDiv.empty();
-            recommendationsDiv.append('<h2>Recommendations for ' + data.product_title + '</h2>');
-            var grid = $('<div class="recommendation-grid"></div>');
-            var start = (page - 1) * 20;
-            var end = start + 20;
-            var recommendationsPage = data.recommendations.slice(start, end);
-            recommendationsPage.forEach(function(rec) {
-                var recommendationItem = $('<div class="recommendation-item"></div>');
-                // recommendationItem.append('<p><strong>' + rec + '</strong></p>');
-                var loader = $('<div class="loader"></div>');
-                recommendationItem.append(loader);
-                if (data.images[rec]) {
-                    var img = $('<img src="' + data.images[rec] + '" alt="' + rec + '">');
-                    img.on('load', function() {
-                        loader.remove();
-                        $(this).show();
-                    });
-                    recommendationItem.append(img);
-                } else {
-                    loader.remove();
-                    recommendationItem.append('<p>No image available</p>');
-                }
-                grid.append(recommendationItem);
-            });
-            recommendationsDiv.append(grid);
+        // Handle Select2 change event to add/remove selected class
+        $('#product_title').on('change', function() {
+            $('.select2-results__option').removeClass('selected');
+            if ($(this).val()) {
+                $('.select2-results__option[data-select2-id="' + $(this).val() + '"]').addClass('selected');
+            }
+        });
 
-            // Display selected product image
-            var selectedProductImageDiv = $('#selectedProductImage');
-            selectedProductImageDiv.empty();
-            selectedProductImageDiv.append('<h2>Selected Product Image</h2>');
-            var selectedLoader = $('<div class="loader"></div>');
-            selectedProductImageDiv.append(selectedLoader);
-            if (data.selected_product_image) {
-                var selectedImg = $('<img src="' + data.selected_product_image + '" alt="' + data.product_id + '">');
-                selectedImg.on('load', function() {
-                    selectedLoader.remove();
+        // Initialize Select2 and handle initial state
+        $('#product_title').trigger('change');
+
+        $('#recommendationForm').on('submit', function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: '/recommend',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    // Hide initial image
+                    $('#initialImage').hide();
+                    displayRecommendations(response, 1);
+                    setupPagination(response.recommendations.length);
+                }
+            });
+        });
+    });
+
+    function displayRecommendations(data, page) {
+        var recommendationsDiv = $('#recommendations');
+        recommendationsDiv.empty();
+        recommendationsDiv.append('<h2 class="recommendations-title">Recommendations for ' + data.product_title + '</h2>');
+        var grid = $('<div class="recommendation-grid"></div>');
+        var start = (page - 1) * 20;
+        var end = start + 20;
+        var recommendationsPage = data.recommendations.slice(start, end);
+        recommendationsPage.forEach(function(rec) {
+            var recommendationItem = $('<div class="recommendation-item"></div>');
+            var loader = $('<div class="loader"></div>');
+            recommendationItem.append(loader);
+            if (data.images[rec]) {
+                var img = $('<img src="' + data.images[rec] + '" alt="' + rec + '">');
+                img.on('load', function() {
+                    loader.remove();
                     $(this).show();
                 });
-                selectedProductImageDiv.append(selectedImg);
+                img.hover(
+                    function(event) {
+                        showExplanation(data.explanations[rec], event.pageX, event.pageY);
+                    },
+                    function() {
+                        hideExplanation();
+                    }
+                );
+                recommendationItem.append(img);
             } else {
-                selectedLoader.remove();
-                selectedProductImageDiv.append('<p>No image available</p>');
+                loader.remove();
+                recommendationItem.append('<p>No image available</p>');
             }
-        }
+            grid.append(recommendationItem);
+        });
+        recommendationsDiv.append(grid);
 
-        function setupPagination(totalItems) {
-            var paginationDiv = $('#pagination');
-            paginationDiv.empty();
-            var totalPages = Math.ceil(totalItems / 20);
-            for (var i = 1; i <= totalPages; i++) {
-                var button = $('<button>' + i + '</button>');
-                button.on('click', function() {
-                    var page = $(this).text();
-                    displayRecommendations(globalResponse, page);
-                    $('.pagination button').removeClass('disabled');
-                    $(this).addClass('disabled');
-                });
-                paginationDiv.append(button);
-            }
-            paginationDiv.find('button').first().addClass('disabled'); // Disable the first button initially
+        var selectedProductImageDiv = $('#selectedProductImage');
+        selectedProductImageDiv.empty();
+        selectedProductImageDiv.append('<h2>Selected Product Image</h2>');
+        var selectedLoader = $('<div class="loader"></div>');
+        selectedProductImageDiv.append(selectedLoader);
+        if (data.selected_product_image) {
+            var selectedImg = $('<img src="' + data.selected_product_image + '" alt="' + data.product_id + '">');
+            selectedImg.on('load', function() {
+                selectedLoader.remove();
+                $(this).show();
+            });
+            selectedProductImageDiv.append(selectedImg);
+        } else {
+            selectedLoader.remove();
+            selectedProductImageDiv.append('<p>No image available</p>');
         }
+    }
+
+    function setupPagination(totalItems) {
+        var paginationDiv = $('#pagination');
+        paginationDiv.empty();
+        var totalPages = Math.ceil(totalItems / 20);
+        for (var i = 1; i <= totalPages; i++) {
+            var button = $('<button>' + i + '</button>');
+            button.on('click', function() {
+                var page = $(this).text();
+                displayRecommendations(globalResponse, page);
+                $('.pagination button').removeClass('disabled');
+                $(this).addClass('disabled');
+            });
+            paginationDiv.append(button);
+        }
+        paginationDiv.find('button').first().addClass('disabled'); // Disable the first button initially
+    }
+
+    function showExplanation(explanation, x, y) {
+        console.log('Explanation:', explanation); // Debug output
+        var explanationDiv = $('#explanation');
+        if (explanationDiv.length === 0) {
+            explanationDiv = $('<div id="explanation" class="explanation-box"></div>');
+            $('body').append(explanationDiv);
+        }
+        explanationDiv.text(explanation);
+        explanationDiv.css({
+            top: y + 15 + 'px', // Adjust to show below the cursor
+            left: x + 15 + 'px', // Adjust to show to the right of the cursor
+            position: 'absolute',
+            background: 'white',
+            border: '1px solid black',
+            padding: '10px',
+            'z-index': 1000
+        });
+        explanationDiv.show();
+    }
+
+    function hideExplanation() {
+        $('#explanation').hide();
+    }
+
     </script>
 </body>
 </html>
