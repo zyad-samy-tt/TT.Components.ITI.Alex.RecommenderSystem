@@ -29,14 +29,14 @@ def explain_recommendations(item, item_rules, data):
         for consequent in consequents:
             common_users = get_common_users_for_items(item, consequent, data)
             if len(common_users) > 0:
-                explanation = f"Product {consequent} is recommended with {item} because {len(list(common_users))} users  bought both together."
+                explanation = f"This product is recommended with your selected item because {len(list(common_users))} user(s) bought both together."
             else:
                 similar_products = [other_consequent for other_consequent in consequents if
                                     other_consequent != consequent]
                 if similar_products:
-                    explanation = f"Product {consequent} is recommended with {item} because it is similar to products {similar_products} bought with {item}."
+                    explanation = f"This product is recommended with your selected item because it is similar to {len(similar_products)} product(s) bought with selected item."
                 else:
-                    explanation = f"Product {consequent} is recommended with {item} based on the association rules."
+                    explanation = f"This product is recommended with your selected item based on the association rules."
             explanations[consequent] = explanation
     # Debug output to ensure explanations are correct
     current_app.logger.debug(f"Explanations: {json.dumps(explanations, indent=2)}")

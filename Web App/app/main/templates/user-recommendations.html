@@ -9,19 +9,193 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet" />
     <!-- Include custom CSS -->
     <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
-    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .logo-container {
+            background-color: #ffffff; /* White background for the logo section */
+            padding: 10px 0; /* Reduced top and bottom padding */
+            width: 100%; /* Full width */
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Space between logo and home icon */
+        }
+        .logo-icon {
+            width: 200px; /* Reduced size */
+            height: auto; /* Maintain aspect ratio */
+            border: none; /* Remove border */
+        }
+        .home-icon {
+            width: 40px; /* Increase the width */
+            height: auto; /* Maintain aspect ratio */
+            margin-right: 25px; /* Margin on the right */
+        }
+        .home-icon img {
+            width: 100%; /* Make sure the image takes up the full size of the container */
+            height: auto; /* Maintain aspect ratio */
+            border: none; /* Remove any additional border on the image itself */
+        }
+        body {
+            background-color: #f6f6f6; /* Background color for the rest of the page */
+        }
+        .header-box {
+            background-color: #c4e9d8;
+            padding: 10px; /* Reduced padding inside the box */
+            text-align: center;
+            border-radius: 8px;
+            margin-top: 20px;
+            width: 100%; /* Ensure full width */
+            margin-left: 0; /* Remove left margin */
+            margin-right: 0; /* Remove right margin */
+            box-sizing: border-box; /* Include padding and border in the element's total width */
+        }
+        /* Custom button style */
+        .btn-primary {
+            background-color: #c4e9d8; /* Set the background color for primary buttons */
+            border-color: #c4e9d8; /* Set border color to match */
+            color: black; /* Set text color to black */
+        }
+
+        .btn-primary:hover,
+        .btn-primary:active,
+        .btn-primary:focus {
+            background-color: #4dbb91; /* Background color when hovering or active */
+            border-color: #4dbb91; /* Border color when hovering or active */
+            color: black; /* Adjust text color if needed */
+        }
+
+        /* Customizing Select2 dropdown */
+        .select2-container--default .select2-selection--single {
+            background-color: #ffffff; /* Background color for the dropdown when closed */
+            color: black; /* Text color */
+            height: 38px; /* Adjust height as needed */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px; /* Center text vertically */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            top: 7px; /* Adjust arrow position */
+        }
+
+        .select2-container--default .select2-results__option {
+            background-color: #ffffff; /* Default background color */
+            color: black; /* Text color */
+        }
+
+        .select2-container--default .select2-results__option:hover {
+            background-color: #c4e9d8; /* Hover color */
+            color: black; /* Selected item text color */
+        }
+
+        .select2-container--default .select2-results__option.selected {
+            background-color: #c4e9d8; /* Selected item background color */
+            color: black; /* Selected item text color */
+        }
+
+        /* Loader styles */
+        .loader {
+            border: 8px solid #f3f3f3; /* Light grey border */
+            border-top: 8px solid #4dbb91; /* Blue border on the top */
+            border-radius: 50%; /* Rounded border */
+            width: 60px; /* Width of the loader */
+            height: 60px; /* Height of the loader */
+            animation: spin 1s linear infinite; /* Spin animation */
+            margin: 20px auto; /* Center the loader horizontally with margin */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); } /* Start at 0 degrees */
+            100% { transform: rotate(360deg); } /* End at 360 degrees */
+        }
+
+        /* Loader container styles */
+        #loaderContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* Full viewport height */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+            z-index: 1000; /* Ensure it appears above other elements */
+        }
+
+        #loaderContainer p {
+            margin-top: 0px;
+            font-size: 18px;
+            color: #333; /* Text color */
+        }
+
+        /* Center the recommendation grid */
+        .recommendation-grid {
+            width: 80%; /* Define a specific width */
+            margin: 20px auto; /* Center the grid */
+            display: flex; /* Use flexbox for layout */
+            flex-wrap: wrap; /* Wrap the items */
+            justify-content: space-around; /* Center the items */
+        }
+
+        .recommendation-item {
+            flex: 0 0 20%; /* Fixed size for each item */
+            margin: 10px; /* Margin around each item */
+            display: flex; /* Use flexbox for layout */
+            justify-content: center; /* Center the content */
+            align-items: center; /* Center the content vertically */
+            position: relative; /* Position relative for loader */
+        }
+
+        .recommendation-item img {
+            max-width: 100%; /* Responsive image */
+            height: auto; /* Maintain aspect ratio */
+            display: none; /* Hide image initially */
+        }
+
+        .no-image {
+            text-align: center;
+            padding: 10px;
+            background-color: #e9e9e9;
+            color: #777;
+            border-radius: 4px;
+        }
+        .pagination button {
+            background-color: #ffffff; /* Default background color */
+            color: #333; /* Default text color */
+            border: 1px solid #ccc; /* Default border */
+            margin: 0 5px; /* Add some margin between buttons */
+        }
+
+        .pagination button:not(.disabled):hover {
+            background-color: #4dbb91; /* Hover background color */
+            color: black; /* Hover text color */
+            border-color: #4dbb91; /* Hover border color */
+        }
+    </style>
 </head>
 <body>
-    <div class="loader-container" id="loaderContainer">
-        <div class="loader"></div>
+    <div class="container-fluid p-0">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logoo.PNG') }}" alt="TwentyToo Logo" class="logo-icon">
+            <a href="/" class="home-icon">
+                <img src="{{ url_for('static', filename='home.png') }}" alt="Home">
+            </a>
+        </div>        
     </div>
-
     <div class="container">
-        <h1 class="text-center">User-Based Recommendations</h1>
+        <div class="header-box">
+            <h1>Personalized Picks</h1>
+        </div>
         <div class="row">
             <div class="col-md-12">
                 <div id="recommendations"></div>
                 <div class="pagination" id="pagination"></div>
+                <div id="loaderContainer" style="display: none;">
+                    <div class="loader"></div>
+                    <p>Loading recommendations...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -36,7 +210,6 @@
         function displayRecommendations(data, page) {
             var recommendationsDiv = $('#recommendations');
             recommendationsDiv.empty();
-            recommendationsDiv.append('<h2>Recommendations for User ' + data.user_id + '</h2>');
             var grid = $('<div class="recommendation-grid"></div>');
             var start = (page - 1) * 20;
             var end = start + 20;
@@ -52,9 +225,6 @@
                         $(this).show();
                     });
                     recommendationItem.append(img);
-                } else {
-                    loader.remove();
-                    recommendationItem.append('<div class="no-image">No image available</div>');
                 }
                 grid.append(recommendationItem);
             });
@@ -86,10 +256,18 @@
                 url: '/get_user_recommendations',
                 type: 'GET',
                 data: { user_id: userId },
+                beforeSend: function() {
+                    $('#loaderContainer').show(); // Show loader before sending the request
+                },
                 success: function(response) {
                     globalResponse = response; // Store the response globally
                     displayRecommendations(response, 1);
                     setupPagination(response.recommendations.length);
+                    $('#loaderContainer').hide(); // Hide the loader after success
+                },
+                error: function() {
+                    $('#loaderContainer').hide(); // Hide the loader if there's an error
+                    alert('Error loading recommendations');
                 }
             });
         });

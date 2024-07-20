@@ -98,8 +98,8 @@ def user_recommend():
 @main.route('/new_user_recommend', methods=['POST'])
 def new_user_recommend():
     user_id = request.form.get('user_id')
-    age = request.form.get('age')
-    return jsonify({"user_id": user_id, "age": age})
+    # age = request.form.get('age')
+    return jsonify({"user_id": user_id})
 
 
 @main.route('/user_recommendations')
